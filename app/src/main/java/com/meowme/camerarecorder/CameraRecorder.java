@@ -54,7 +54,9 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
+import java.util.TreeMap;
+
+public class CameraRecorder extends Activity implements SurfaceHolder.Callback,PictureCapturingListener{
 
 
 	public String SelectedVideoType;
@@ -68,12 +70,13 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 	private static final String[] VideoType = {"High", "Medium", "Low"};
 
 
+
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        
+
 		mSurfaceView = (SurfaceView) findViewById(R.id.surfaceView1);
 		mSurfaceHolder = mSurfaceView.getHolder();
 		mSurfaceHolder.addCallback(this);
@@ -92,13 +95,13 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 
 				switch (position) {
 					case 0:
-						Toast.makeText(CameraRecorder.this, "High1", Toast.LENGTH_SHORT).show();
+//						Toast.makeText(CameraRecorder.this, "High1", Toast.LENGTH_SHORT).show();
 						break;
 					case 1:
-						Toast.makeText(CameraRecorder.this, "Medium1", Toast.LENGTH_SHORT).show();
+//						Toast.makeText(CameraRecorder.this, "Medium1", Toast.LENGTH_SHORT).show();
 						break;
 					case 2:
-						Toast.makeText(CameraRecorder.this, "Low1", Toast.LENGTH_SHORT).show();
+//						Toast.makeText(CameraRecorder.this, "Low1", Toast.LENGTH_SHORT).show();
 						break;
 
 				}
@@ -117,7 +120,8 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 				if (isChecked) {
 					Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
+					String VideoType = spinner.getSelectedItem().toString();
+//					Toast.makeText(CameraRecorder.this, VideoType, Toast.LENGTH_SHORT).show();
 					intent.putExtra("VideoType",spinner.getSelectedItem().toString());
 					startService(intent);
 				} else {
@@ -130,7 +134,9 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 		takepic.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Toast.makeText(CameraRecorder.this, "Working On Picture", Toast.LENGTH_SHORT).show();
+				Intent intent = new Intent(CameraRecorder.this, ImageRecorder.class);
+				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				startService(intent);
 			}
 		});
 
@@ -148,5 +154,15 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 	
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
+	}
+
+	@Override
+	public void onCaptureDone(String pictureUrl, byte[] pictureData) {
+
+	}
+
+	@Override
+	public void onDoneCapturingAllPhotos(TreeMap<String, byte[]> picturesTaken) {
+
 	}
 }

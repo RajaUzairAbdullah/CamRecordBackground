@@ -67,7 +67,7 @@ public class RecorderService extends Service {
 	private static Camera mServiceCamera;
 	private boolean mRecordingStatus;
 	private MediaRecorder mMediaRecorder;
-
+	private String VideoType;
 	@Override
 	public void onCreate() {
 
@@ -88,7 +88,7 @@ public class RecorderService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
-
+		VideoType = intent.getExtras().get("VideoType").toString();
 		if (mRecordingStatus == false)
 			startRecording();
 
@@ -108,7 +108,7 @@ public class RecorderService extends Service {
 		String date = df.format(Calendar.getInstance().getTime());
 
 		try {
-			Toast.makeText(getBaseContext(), "Recording Started", Toast.LENGTH_SHORT).show();
+			Toast.makeText(getBaseContext(), "Recording Started: "+VideoType, Toast.LENGTH_SHORT).show();
 
 			mServiceCamera = Camera.open();
 			Camera.Parameters params = mServiceCamera.getParameters();
@@ -147,30 +147,13 @@ public class RecorderService extends Service {
 			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
 			// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
-			CameraRecorder.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-				@Override
-				public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-
-					switch (position) {
-						case 0:
-							Toast.makeText(getApplicationContext(), "Low", Toast.LENGTH_SHORT).show();
-							break;
-						case 1:
-							Toast.makeText(getApplicationContext(), "Medium", Toast.LENGTH_SHORT).show();
-							break;
-						case 2:
-							Toast.makeText(getApplicationContext(), "High", Toast.LENGTH_SHORT).show();
-							break;
-
-					}
-				}
-
-				@Override
-				public void onNothingSelected(AdapterView<?> parent) {
-					Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
-				}
-			});
-			mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+			if(VideoType.equals("High")) {
+				mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+			}else if(VideoType.equals("Medium")) {
+				mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P));
+			}else if(VideoType.equals("Low")) {
+				mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
+			}
 
 			mMediaRecorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/VID-"+date+".mp4");
 			mMediaRecorder.setPreviewDisplay(mSurfaceHolder.getSurface());
@@ -205,6 +188,7 @@ public class RecorderService extends Service {
 
 		mMediaRecorder.stop();
 		mMediaRecorder.reset();
+		VideoType = "";
 
 		mServiceCamera.stopPreview();
 		mMediaRecorder.release();
