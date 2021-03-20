@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 android {
-    compileSdkVersion 16
+    compileSdkVersion 30
     buildToolsVersion "23.0.2"
     defaultConfig {
         applicationId "com.meowme.camerarecorder"
         minSdkVersion 16
-        targetSdkVersion 16
+        targetSdkVersion 30
     }
     buildTypes {
         release {
@@ -18,4 +18,5 @@ android {
 }
 
 dependencies {
+implementation 'com.android.support:support-annotations:28.0.0'
 }

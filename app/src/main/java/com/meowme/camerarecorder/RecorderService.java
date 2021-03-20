@@ -43,15 +43,21 @@ import android.app.Service;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 public class RecorderService extends Service {
@@ -61,14 +67,16 @@ public class RecorderService extends Service {
 	private static Camera mServiceCamera;
 	private boolean mRecordingStatus;
 	private MediaRecorder mMediaRecorder;
-	
+
 	@Override
 	public void onCreate() {
+
+
 		mRecordingStatus = false;
 		mServiceCamera = CameraRecorder.mCamera;
 		mSurfaceView = CameraRecorder.mSurfaceView;
 		mSurfaceHolder = CameraRecorder.mSurfaceHolder;
-		
+
 		super.onCreate();
 	}
 
@@ -76,7 +84,7 @@ public class RecorderService extends Service {
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
-	
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
@@ -91,19 +99,22 @@ public class RecorderService extends Service {
 	public void onDestroy() {
 		stopRecording();
 		mRecordingStatus = false;
-		
+
 		super.onDestroy();
-	}   
+	}
 
 	public boolean startRecording(){
+		DateFormat df = new SimpleDateFormat("EEE, d MMM yyyy, HH:mm");
+		String date = df.format(Calendar.getInstance().getTime());
+
 		try {
 			Toast.makeText(getBaseContext(), "Recording Started", Toast.LENGTH_SHORT).show();
-			
+
 			mServiceCamera = Camera.open();
 			Camera.Parameters params = mServiceCamera.getParameters();
 			mServiceCamera.setParameters(params);
 			Camera.Parameters p = mServiceCamera.getParameters();
-			
+
 			final List<Size> listPreviewSize = p.getSupportedPreviewSizes();
 			for (Size size : listPreviewSize) {
                 Log.i(TAG, String.format("Supported Preview Size (%d, %d)", size.width, size.height));
@@ -121,24 +132,54 @@ public class RecorderService extends Service {
 				Log.e(TAG, e.getMessage());
 				e.printStackTrace();
 			}
-			
+
 			mServiceCamera.unlock();
 
 			mMediaRecorder = new MediaRecorder();
 			mMediaRecorder.setCamera(mServiceCamera);
-			mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+//			mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+//			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+//			mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+//			mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+//            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+			// Step 2: Set sources
+			mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 			mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-			mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-			mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-			mMediaRecorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/video.mp4");
+
+			// Step 3: Set a CamcorderProfile (requires API Level 8 or higher)
+			CameraRecorder.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+
+					switch (position) {
+						case 0:
+							Toast.makeText(getApplicationContext(), "Low", Toast.LENGTH_SHORT).show();
+							break;
+						case 1:
+							Toast.makeText(getApplicationContext(), "Medium", Toast.LENGTH_SHORT).show();
+							break;
+						case 2:
+							Toast.makeText(getApplicationContext(), "High", Toast.LENGTH_SHORT).show();
+							break;
+
+					}
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> parent) {
+					Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
+				}
+			});
+			mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH));
+
+			mMediaRecorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/VID-"+date+".mp4");
 			mMediaRecorder.setPreviewDisplay(mSurfaceHolder.getSurface());
-			
+
 			mMediaRecorder.prepare();
 			mMediaRecorder.start();
 
 			mRecordingStatus = true;
-			
+
 			return true;
 
 		} catch (IllegalStateException e) {
@@ -164,10 +205,10 @@ public class RecorderService extends Service {
 
 		mMediaRecorder.stop();
 		mMediaRecorder.reset();
-		
+
 		mServiceCamera.stopPreview();
 		mMediaRecorder.release();
-		
+
 		mServiceCamera.release();
 		mServiceCamera = null;
 	}

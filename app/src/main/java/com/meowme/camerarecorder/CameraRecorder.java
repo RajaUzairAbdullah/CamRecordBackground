@@ -46,17 +46,28 @@ import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Spinner;
+import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 
-	private static final String TAG = CameraRecorder.class.getSimpleName();
 
+	public String SelectedVideoType;
 	public static SurfaceView mSurfaceView;
 	public static SurfaceHolder mSurfaceHolder;
 	public static Camera mCamera;
 	public static boolean mPreviewRunning;
-	
+	ToggleButton toggle;
+	Button takepic;
+	public static Spinner spinner;
+	private static final String[] VideoType = {"High", "Medium", "Low"};
+
+
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,32 +78,68 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback {
 		mSurfaceHolder = mSurfaceView.getHolder();
 		mSurfaceHolder.addCallback(this);
 		mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		
-		Button btnStart = (Button) findViewById(R.id.StartService);
-		btnStart.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
-				Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startService(intent);
-				finish();
+
+		spinner = (Spinner)findViewById(R.id.spinner);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(CameraRecorder.this,
+				android.R.layout.simple_spinner_item,VideoType);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+
+		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+
+				switch (position) {
+					case 0:
+						Toast.makeText(CameraRecorder.this, "High1", Toast.LENGTH_SHORT).show();
+						break;
+					case 1:
+						Toast.makeText(CameraRecorder.this, "Medium1", Toast.LENGTH_SHORT).show();
+						break;
+					case 2:
+						Toast.makeText(CameraRecorder.this, "Low1", Toast.LENGTH_SHORT).show();
+						break;
+
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
 			}
 		});
 
-		Button btnStop = (Button) findViewById(R.id.StopService);
-		btnStop.setOnClickListener(new View.OnClickListener()
-		{
-			public void onClick(View v)
-			{
-				stopService(new Intent(CameraRecorder.this, RecorderService.class));
+
+		toggle = findViewById(R.id.togglebutton);
+		toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if (isChecked) {
+					Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+					intent.putExtra("VideoType",spinner.getSelectedItem().toString());
+					startService(intent);
+				} else {
+					stopService(new Intent(CameraRecorder.this, RecorderService.class));
+				}
 			}
 		});
+
+		takepic = findViewById(R.id.TakePic);
+		takepic.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Toast.makeText(CameraRecorder.this, "Working On Picture", Toast.LENGTH_SHORT).show();
+			}
+		});
+
     }
-    
+
+
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		
+
 	}
 
 	@Override

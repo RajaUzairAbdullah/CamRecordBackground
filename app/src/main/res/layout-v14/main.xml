@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<SurfaceView
+	android:id="@+id/surfaceView1"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+</SurfaceView>
+	<LinearLayout
+		android:background="#000000"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+
+	<LinearLayout
+		android:id="@+id/groupNumbers"
+		android:layout_margin="0dp"
+		android:orientation="vertical"
+		android:layout_gravity="center_vertical"
+		android:layout_weight="0.7"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+
+		<LinearLayout
+			android:padding="20dp"
+			android:layout_gravity="center"
+			android:layout_marginVertical="40dp"
+			android:orientation="horizontal"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<ToggleButton
+				android:id="@+id/togglebutton"
+				android:padding="20dp"
+				android:layout_width="120dp"
+				android:layout_height="wrap_content"
+				android:textOn="Stop"
+				android:textOff="Start"
+				/>
+			<Spinner
+				android:id="@+id/spinner"
+				android:padding="10dp"
+				android:background="#FFFFFF"
+				android:layout_width="120dp"
+				android:layout_height="wrap_content" />
+		</LinearLayout>
+
+
+
+		<Button
+			android:id="@+id/TakePic"
+			android:layout_gravity="center"
+			android:padding="20dp"
+			android:layout_marginVertical="40dp"
+			android:layout_width="150dp"
+			android:layout_height="wrap_content"
+			android:text="Take Picture"
+			/>
+	</LinearLayout>
+	</LinearLayout>
+</RelativeLayout>
