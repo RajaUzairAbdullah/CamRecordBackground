@@ -45,6 +45,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
@@ -64,10 +65,10 @@ public class RecorderService extends Service {
 	private static final String TAG = "RecorderService";
 	private SurfaceView mSurfaceView;
 	private SurfaceHolder mSurfaceHolder;
-	private static Camera mServiceCamera;
+	private Camera mServiceCamera;
 	private boolean mRecordingStatus;
 	private MediaRecorder mMediaRecorder;
-	private String VideoType;
+	private String VideoType,Video_CameraType;
 	@Override
 	public void onCreate() {
 
@@ -89,6 +90,7 @@ public class RecorderService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		super.onStartCommand(intent, flags, startId);
 		VideoType = intent.getExtras().get("VideoType").toString();
+		Video_CameraType = intent.getExtras().get("CameraType").toString();
 		if (mRecordingStatus == false)
 			startRecording();
 
@@ -110,7 +112,14 @@ public class RecorderService extends Service {
 		try {
 			Toast.makeText(getBaseContext(), "Recording Started: "+VideoType, Toast.LENGTH_SHORT).show();
 
-			mServiceCamera = Camera.open();
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+				if(Video_CameraType.equals("Front")) {
+					mServiceCamera = Camera.open(1);
+				}else if(Video_CameraType.equals("Back")) {
+					mServiceCamera = Camera.open(0);
+				}
+
+			}
 			Camera.Parameters params = mServiceCamera.getParameters();
 			mServiceCamera.setParameters(params);
 			Camera.Parameters p = mServiceCamera.getParameters();
@@ -154,6 +163,8 @@ public class RecorderService extends Service {
 			}else if(VideoType.equals("Low")) {
 				mMediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_LOW));
 			}
+
+
 
 			mMediaRecorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/VID-"+date+".mp4");
 			mMediaRecorder.setPreviewDisplay(mSurfaceHolder.getSurface());

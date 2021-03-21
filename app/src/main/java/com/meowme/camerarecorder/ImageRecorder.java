@@ -8,6 +8,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -22,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ImageRecorder extends Service  {
     private static final String TAG = "ImageService";
@@ -30,21 +33,11 @@ public class ImageRecorder extends Service  {
     private Camera mCamera;
     // the camera parameters
     private Camera.Parameters parameters;
-    private Bitmap bmp;
-    FileOutputStream fo;
-    private String FLASH_MODE;
-    private int QUALITY_MODE = 0;
-    private boolean isFrontCamRequest = false;
-    private Camera.Size pictureSize;
-    SurfaceView sv;
     private SurfaceHolder sHolder;
-    private WindowManager windowManager;
-    WindowManager.LayoutParams params;
-    public Intent cameraIntent;
-    SharedPreferences pref;
-    SharedPreferences.Editor editor;
-    int width = 0, height = 0;
+    private String Image_CameraType,ImageTimmer;
     public boolean safeToCapture = true;
+    final Handler handler = new Handler();
+//    Runnable runable = new Runnable();
     //Github
 
 
@@ -54,9 +47,21 @@ public class ImageRecorder extends Service  {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-
+        Image_CameraType = intent.getExtras().get("CameraType").toString();
+        ImageTimmer = intent.getExtras().get("PicTimmer").toString();
+        int seconds = Integer.parseInt(intent.getExtras().get("PicTimmer").toString());
+        Toast.makeText(this, "Take Image After Every : "+ImageTimmer+ " sec", Toast.LENGTH_SHORT).show();
         if (mRecordingStatus == false)
-            TakingPic();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        TakingPic();
+                        handler.postDelayed(this, seconds*1000);
+                    }
+                }, seconds*1000);
+
+            }
 
         return START_STICKY;
     }
@@ -103,7 +108,7 @@ public class ImageRecorder extends Service  {
                 mCamera.release();
                 mCamera = null;
 
-                String strImagePath = Environment.getExternalStorageDirectory()+"/"+myDirectory.getName()+"/user"+curTime+".jpg";
+                String strImagePath = Environment.getExternalStorageDirectory()+"/"+myDirectory.getName()+"/IMG-"+curTime+".jpg";
                 Log.d("CAMERA", "picture clicked - "+strImagePath);
             } catch (FileNotFoundException e){
                 Log.d("CAMERA", e.getMessage());
@@ -116,35 +121,20 @@ public class ImageRecorder extends Service  {
         }
     };
 
-    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
-    private Camera getAvailableFrontCamera (){
-
-        int cameraCount = 0;
-        Camera cam = null;
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        cameraCount = Camera.getNumberOfCameras();
-        for (int camIdx = 0; camIdx < cameraCount; camIdx++) {
-            Camera.getCameraInfo(camIdx, cameraInfo);
-            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                try {
-                    cam = Camera.open(camIdx);
-                } catch (RuntimeException e) {
-                    Log.e("CAMERA", "Camera failed to open: " + e.getLocalizedMessage());
-                }
-            }
-        }
-
-        return cam;
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public boolean TakingPic(){
 
         try {
             Toast.makeText(this, "Taking Picture", Toast.LENGTH_SHORT).show();
-            mCamera = getAvailableFrontCamera();     // globally declared instance of camera
+
             if (mCamera == null){
-                mCamera = Camera.open();    //Take rear facing camera only if no front camera available
+                if(Image_CameraType.equals("Front")) {
+                    mCamera = Camera.open(1);
+                }else if(Image_CameraType.equals("Back")) {
+                    mCamera = Camera.open(0);
+                }
+
             }
             SurfaceView sv = new SurfaceView(getApplicationContext());
             SurfaceTexture surfaceTexture = null;
@@ -169,7 +159,6 @@ public class ImageRecorder extends Service  {
                     mCamera.takePicture(null, null, mCall);
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -186,6 +175,24 @@ public class ImageRecorder extends Service  {
             return false;
 
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        stoptakingpic();
+
+        super.onDestroy();
+    }
+
+
+    public void stoptakingpic(){
+//        handler.removeCallbacks((Runnable) );
+    if(mCamera !=null){
+        Toast.makeText(this, "Not Null", Toast.LENGTH_SHORT).show();
+    } else if (mCamera == null) {
+        Toast.makeText(this, "Came Null", Toast.LENGTH_SHORT).show();
+    }
+
     }
 
 }

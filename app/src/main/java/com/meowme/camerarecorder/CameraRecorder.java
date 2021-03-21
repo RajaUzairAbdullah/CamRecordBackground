@@ -41,6 +41,7 @@ package com.meowme.camerarecorder;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
@@ -51,6 +52,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -59,15 +61,17 @@ import java.util.TreeMap;
 public class CameraRecorder extends Activity implements SurfaceHolder.Callback,PictureCapturingListener{
 
 
-	public String SelectedVideoType;
 	public static SurfaceView mSurfaceView;
 	public static SurfaceHolder mSurfaceHolder;
 	public static Camera mCamera;
 	public static boolean mPreviewRunning;
-	ToggleButton toggle;
+	ToggleButton togglebtn_video,togglebtn_pic;
 	Button takepic;
-	public static Spinner spinner;
+	public static Spinner videotype,cameratype,pic_cameratype,pic_spinner_time;
 	private static final String[] VideoType = {"High", "Medium", "Low"};
+	private static final String[] CameraType = {"Front","Back"};
+	private static final String[] PicCameraType = {"Front","Back"};
+	private static final String[] CameraTimmer = {"5","10","20","30","40","50","60"};
 
 
 
@@ -82,17 +86,18 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 		mSurfaceHolder.addCallback(this);
 		mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
-		spinner = (Spinner)findViewById(R.id.spinner);
+		videotype = (Spinner)findViewById(R.id.spinner);
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(CameraRecorder.this,
 				android.R.layout.simple_spinner_item,VideoType);
 
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner.setAdapter(adapter);
+		videotype.setAdapter(adapter);
 
-		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+		videotype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-
+				((TextView)parent.getChildAt(0)).setTextColor(Color.BLACK);
+				((TextView) parent.getChildAt(0)).setTextSize(16);
 				switch (position) {
 					case 0:
 //						Toast.makeText(CameraRecorder.this, "High1", Toast.LENGTH_SHORT).show();
@@ -114,15 +119,117 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 		});
 
 
-		toggle = findViewById(R.id.togglebutton);
-		toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		cameratype = (Spinner)findViewById(R.id.cameratype);
+		ArrayAdapter<String> cameratypeadapter = new ArrayAdapter<String>(CameraRecorder.this,
+				android.R.layout.simple_spinner_item,PicCameraType);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		cameratype.setAdapter(cameratypeadapter);
+
+		cameratype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+				((TextView)parent.getChildAt(0)).setTextColor(Color.BLACK);
+				((TextView) parent.getChildAt(0)).setTextSize(16);
+				switch (position) {
+					case 0:
+						Toast.makeText(CameraRecorder.this, "Front", Toast.LENGTH_SHORT).show();
+						break;
+					case 1:
+						Toast.makeText(CameraRecorder.this, "Back", Toast.LENGTH_SHORT).show();
+						break;
+
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+			}
+		});
+
+		pic_cameratype = (Spinner)findViewById(R.id.pic_cameratype);
+		ArrayAdapter<String> pic_cameratypeadapter = new ArrayAdapter<String>(CameraRecorder.this,
+				android.R.layout.simple_spinner_item,CameraType);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		pic_cameratype.setAdapter(pic_cameratypeadapter);
+
+		pic_cameratype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+				((TextView)parent.getChildAt(0)).setTextColor(Color.BLACK);
+				((TextView) parent.getChildAt(0)).setTextSize(16);
+				switch (position) {
+					case 0:
+						Toast.makeText(CameraRecorder.this, "Front", Toast.LENGTH_SHORT).show();
+						break;
+					case 1:
+						Toast.makeText(CameraRecorder.this, "Back", Toast.LENGTH_SHORT).show();
+						break;
+
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+			}
+		});
+
+		pic_spinner_time = (Spinner)findViewById(R.id.cam_timmer_spinner);
+		ArrayAdapter<String> pic_spinner_adapter = new ArrayAdapter<String>(CameraRecorder.this,
+				android.R.layout.simple_spinner_item,CameraTimmer);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		pic_spinner_time.setAdapter(pic_spinner_adapter);
+
+		pic_spinner_time.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
+				((TextView)parent.getChildAt(0)).setTextColor(Color.BLACK);
+				((TextView) parent.getChildAt(0)).setTextSize(16);
+				switch (position) {
+					case 0:
+//						Toast.makeText(CameraRecorder.this, "5", Toast.LENGTH_SHORT).show();
+						break;
+					case 1:
+//						Toast.makeText(CameraRecorder.this, "10", Toast.LENGTH_SHORT).show();
+						break;
+					case 2:
+//						Toast.makeText(CameraRecorder.this, "20", Toast.LENGTH_SHORT).show();
+						break;
+					case 3:
+//						Toast.makeText(CameraRecorder.this, "30", Toast.LENGTH_SHORT).show();
+						break;
+					case 4:
+//						Toast.makeText(CameraRecorder.this, "40", Toast.LENGTH_SHORT).show();
+						break;
+					case 5:
+//						Toast.makeText(CameraRecorder.this, "50", Toast.LENGTH_SHORT).show();
+						break;
+					case 6:
+//						Toast.makeText(CameraRecorder.this, "60", Toast.LENGTH_SHORT).show();
+						break;
+
+				}
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+			}
+		});
+
+
+		togglebtn_video = findViewById(R.id.togglebutton);
+		togglebtn_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				if (isChecked) {
 					Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
 					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					String VideoType = spinner.getSelectedItem().toString();
-//					Toast.makeText(CameraRecorder.this, VideoType, Toast.LENGTH_SHORT).show();
-					intent.putExtra("VideoType",spinner.getSelectedItem().toString());
+					intent.putExtra("VideoType",videotype.getSelectedItem().toString());
+					intent.putExtra("CameraType",cameratype.getSelectedItem().toString());
 					startService(intent);
 				} else {
 					stopService(new Intent(CameraRecorder.this, RecorderService.class));
@@ -130,15 +237,23 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 			}
 		});
 
-		takepic = findViewById(R.id.TakePic);
-		takepic.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				Intent intent = new Intent(CameraRecorder.this, ImageRecorder.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-				startService(intent);
+
+		togglebtn_pic = findViewById(R.id.togglebutton_pic);
+		togglebtn_pic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				if (isChecked) {
+					Intent intent = new Intent(CameraRecorder.this, ImageRecorder.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					intent.putExtra("CameraType",pic_cameratype.getSelectedItem().toString());
+					intent.putExtra("PicTimmer",pic_spinner_time.getSelectedItem().toString());
+					startService(intent);
+				} else {
+					stopService(new Intent(CameraRecorder.this, ImageRecorder.class));
+				}
 			}
 		});
+
+
 
     }
 
