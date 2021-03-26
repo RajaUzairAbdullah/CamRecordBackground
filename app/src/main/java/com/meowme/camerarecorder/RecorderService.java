@@ -92,6 +92,7 @@ public class RecorderService extends Service {
 		VideoType = intent.getExtras().get("VideoType").toString();
 		Video_CameraType = intent.getExtras().get("CameraType").toString();
 		if (mRecordingStatus == false)
+
 			startRecording();
 
 		return START_STICKY;
@@ -167,6 +168,7 @@ public class RecorderService extends Service {
 
 
 			mMediaRecorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/VID-"+date+".mp4");
+
 			mMediaRecorder.setPreviewDisplay(mSurfaceHolder.getSurface());
 
 			mMediaRecorder.prepare();

@@ -39,11 +39,24 @@
 
 package com.meowme.camerarecorder;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Camera;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -64,7 +77,7 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 	public static SurfaceView mSurfaceView;
 	public static SurfaceHolder mSurfaceHolder;
 	public static Camera mCamera;
-	public static boolean mPreviewRunning;
+	public static boolean VideoButtonStatus,ImageButtonStatus;
 	ToggleButton togglebtn_video,togglebtn_pic;
 	Button takepic;
 	public static Spinner videotype,cameratype,pic_cameratype,pic_spinner_time;
@@ -72,8 +85,14 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 	private static final String[] CameraType = {"Front","Back"};
 	private static final String[] PicCameraType = {"Front","Back"};
 	private static final String[] CameraTimmer = {"5","10","20","30","40","50","60"};
+	private Context mycontext;
 
-
+	int PERMISSION_ALL = 1;
+	String[] PERMISSIONS = {
+			Manifest.permission.RECORD_AUDIO,
+			Manifest.permission.WRITE_EXTERNAL_STORAGE,
+			Manifest.permission.CAMERA
+	};
 
 	/** Called when the activity is first created. */
     @Override
@@ -225,14 +244,23 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 		togglebtn_video = findViewById(R.id.togglebutton);
 		togglebtn_video.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					intent.putExtra("VideoType",videotype.getSelectedItem().toString());
-					intent.putExtra("CameraType",cameratype.getSelectedItem().toString());
-					startService(intent);
-				} else {
-					stopService(new Intent(CameraRecorder.this, RecorderService.class));
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+					if (!hasPermissions(getApplicationContext(), PERMISSIONS)) {
+						ActivityCompat.requestPermissions(CameraRecorder.this, PERMISSIONS, PERMISSION_ALL);
+					}else{
+						if (isChecked) {
+							VideoButtonStatus = true;
+							Intent intent = new Intent(CameraRecorder.this, RecorderService.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							intent.putExtra("VideoType",videotype.getSelectedItem().toString());
+							intent.putExtra("CameraType",cameratype.getSelectedItem().toString());
+							startService(intent);
+						} else {
+							VideoButtonStatus = false;
+							stopService(new Intent(CameraRecorder.this, RecorderService.class));
+						}
+					}
 				}
 			}
 		});
@@ -241,15 +269,32 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 		togglebtn_pic = findViewById(R.id.togglebutton_pic);
 		togglebtn_pic.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				if (isChecked) {
-					Intent intent = new Intent(CameraRecorder.this, ImageRecorder.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					intent.putExtra("CameraType",pic_cameratype.getSelectedItem().toString());
-					intent.putExtra("PicTimmer",pic_spinner_time.getSelectedItem().toString());
-					startService(intent);
-				} else {
-					stopService(new Intent(CameraRecorder.this, ImageRecorder.class));
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+					if (!hasPermissions(getApplicationContext(), PERMISSIONS)) {
+						ActivityCompat.requestPermissions(CameraRecorder.this, PERMISSIONS, PERMISSION_ALL);
+					}else{
+						if (isChecked) {
+							ImageButtonStatus = true;
+							if (!Settings.canDrawOverlays(getApplicationContext())) {
+								Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+								startActivityForResult(intent, 0);
+							}else{
+								Toast.makeText(mycontext, "No Overlay Done", Toast.LENGTH_SHORT).show();
+							}
+							Intent intent = new Intent(CameraRecorder.this, ImageRecorder.class);
+							intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+							intent.putExtra("CameraType",pic_cameratype.getSelectedItem().toString());
+							intent.putExtra("PicTimmer",pic_spinner_time.getSelectedItem().toString());
+							startService(intent);
+						} else {
+							ImageButtonStatus = false;
+							stopService(new Intent(CameraRecorder.this, ImageRecorder.class));
+						}
+					}
 				}
+
+
 			}
 		});
 
@@ -257,6 +302,18 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 
     }
 
+
+
+	public static boolean hasPermissions(Context context, String... permissions) {
+		if (context != null && permissions != null) {
+			for (String permission : permissions) {
+				if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
@@ -280,4 +337,5 @@ public class CameraRecorder extends Activity implements SurfaceHolder.Callback,P
 	public void onDoneCapturingAllPhotos(TreeMap<String, byte[]> picturesTaken) {
 
 	}
+
 }
